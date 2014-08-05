@@ -1,5 +1,5 @@
 local rune = {}
-local pick_types = { 
+rune.pick_types = { 
   "default:pick_wood",
   "default:pick_stone",
   "default:pick_steel",
@@ -11,13 +11,15 @@ local pick_types = {
   "default:pick_mese"
 }
 
-local rune_types = {
+rune.types = {
   "coal",
   "iron",
   "tin"
 }
 
-for i, p in ipairs(pick_types) do
+rune.search_size = 7
+
+for i, p in ipairs(rune.pick_types) do
   minetest.register_craft({
     output = "oleastre:rune",
     recipe = { {p}, {"group:stone"}}
@@ -25,17 +27,24 @@ for i, p in ipairs(pick_types) do
 end
 
 function rune.handle_rightclick(pos, node, clicker)
-  print("rightclick")
   local meta = minetest.get_meta(pos)
   local rune_type_idx = meta:get_int("rune:type") + 1
-  print("idx="..rune_type_idx)
-  if rune_type_idx > #rune_types then
+  if rune_type_idx > #rune.types then
     rune_type_idx = 1
   end
-  local rune_type = rune_types[rune_type_idx]
-  minetest.set_node(pos, {name="oleastre:rune_"..rune_type, param1=node.param1, param2=node.param2 })
+  local rune_type = rune.types[rune_type_idx]
+  minetest.swap_node(pos, {name="oleastre:rune_"..rune_type, param1=node.param1, param2=node.param2 })
 
-  meta:set_string("infotext", "Found x "..rune_type.." ore in the surrounding area.")
+  local res = minetest.find_node_near(pos, rune.search_size, "default:stone_with_"..rune_type)
+  if res then
+    local dx = math.floor(res.x - pos.x)
+    local dy = math.floor(res.y - pos.y)
+    local dz = math.floor(res.z - pos.z)
+    meta:set_string("infotext", "Found "..rune_type.." at ("..dx..","..dy..","..dz..") from your current position.")
+  else
+    meta:set_string("infotext", "No "..rune_type.." found in the surrounding area.")
+  end
+
   meta:set_int("rune:type", rune_type_idx)
 end
 
@@ -60,7 +69,7 @@ minetest.register_node("oleastre:rune", {
   end,
 })
 
-for i, t in ipairs(rune_types) do
+for i, t in ipairs(rune.types) do
   minetest.register_node("oleastre:rune_"..t, {
     description = "Rune",
     drawtype = "signlike",
