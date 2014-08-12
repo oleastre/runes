@@ -54,7 +54,7 @@ function rune.search_ore(pos, node)
     end
     
     local dir = node.param2
-    --minetest.debug("param2="..dir.." dx="..dx.." dy="..dy.." dz="..dz)
+    minetest.debug("param2="..dir.." dx="..dx.." dy="..dy.." dz="..dz)
     
     if (dir==1) or (dir==2) then 
       dx = -dx
@@ -65,7 +65,7 @@ function rune.search_ore(pos, node)
       dz = t
     elseif dir==5 then
       local t = dx
-      dx = -dz
+      dx = dz
       dz = -t
     end
     
