@@ -89,7 +89,12 @@ end
 
 function rune.handle_rightclick(pos, node, clicker)
   local meta = minetest.get_meta(pos)
-  local rune_type_idx = meta:get_int("rune:type") + 1
+  local rune_type_idx = meta:get_int("rune:type")
+  if(rune_type_idx<0) then
+    rune_type_idx = -rune_type_idx
+  else 
+    rune_type_idx = rune_type_idx + 1
+  end
   if rune_type_idx > #rune.types then
     rune_type_idx = 1
   end
@@ -113,7 +118,7 @@ minetest.register_node("oleastre:rune", {
   on_construct = function(pos)
     local meta = minetest.get_meta(pos)
     meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
-    meta:set_int("rune:type", 0)
+    meta:set_int("rune:type", -1)
   end,
   on_rightclick = function(pos, node, clicker)
     rune.handle_rightclick(pos, node, clicker)
@@ -128,7 +133,6 @@ for i, t in ipairs(rune.types) do
     inventory_image = "rune.png^rune_"..t..".png",
     paramtype = "light",
     paramtype2 = "wallmounted",
-    drop = "oleastre:rune",
     sunlight_propagates = true,
     walkable = false,
     selection_box = {type = "wallmounted"},
@@ -138,6 +142,11 @@ for i, t in ipairs(rune.types) do
     end,
     on_punch = function(pos, node, clicker)
       rune.search_ore(pos, node)
+    end,
+    on_construct = function(pos)
+      local meta = minetest.get_meta(pos)
+      meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
+      meta:set_int("rune:type", -i)
     end,
   })
 end
