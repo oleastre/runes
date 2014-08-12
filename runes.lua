@@ -34,6 +34,9 @@ end
 function rune.search_ore(pos, node)
   local meta = minetest.get_meta(pos)
   local rune_type_idx = meta:get_int("rune:type")
+  if(rune_type_idx<0) then
+    return
+  end
   local rune_type = rune.types[rune_type_idx]
   local res = minetest.find_node_near(pos, rune.search_size, "default:stone_with_"..rune_type)
   if res then
