@@ -27,3 +27,4 @@ Use left-click to update the search.
 
 When the rune is digged, it becomes inactive.
 
+![Miners rune example](doc/miners_rune.png)
