@@ -26,7 +26,7 @@ rune.search_size = 7
 
 for i, p in ipairs(rune.pick_types) do
   minetest.register_craft({
-    output = "oleastre:rune",
+    output = "oleastre:rune_inactive_coal",
     recipe = { {p}, {"group:stone"}}
   })
 end
@@ -107,33 +107,13 @@ function rune.handle_rightclick(pos, node, clicker)
   rune.search_ore(pos, node)
 end
 
-minetest.register_node("oleastre:rune", {
-  description = "Rune",
-  drawtype = "signlike",
-  tiles = {"rune.png"},
-  inventory_image = "rune.png",
-  paramtype = "light",
-  paramtype2 = "wallmounted",
-  sunlight_propagates = true,
-  walkable = false,
-  selection_box = {type = "wallmounted"},
-  groups = {choppy = 2, dig_immediate = 2},
-  on_construct = function(pos)
-    local meta = minetest.get_meta(pos)
-    meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
-    meta:set_int("rune:type", -1)
-  end,
-  on_rightclick = function(pos, node, clicker)
-    rune.handle_rightclick(pos, node, clicker)
-  end,
-})
 
 for i, t in ipairs(rune.types) do
-  minetest.register_node("oleastre:rune_"..t, {
+  minetest.register_node("oleastre:rune_inactive_"..t, {
     description = "Rune",
     drawtype = "signlike",
-    tiles = {"rune.png^rune_"..t..".png"},
-    inventory_image = "rune.png^rune_"..t..".png",
+    tiles = {"rune.png"},
+    inventory_image = "rune.png",
     paramtype = "light",
     paramtype2 = "wallmounted",
     sunlight_propagates = true,
@@ -143,13 +123,30 @@ for i, t in ipairs(rune.types) do
     on_rightclick = function(pos, node, clicker)
       rune.handle_rightclick(pos, node, clicker)
     end,
-    on_punch = function(pos, node, clicker)
-      rune.search_ore(pos, node)
-    end,
     on_construct = function(pos)
       local meta = minetest.get_meta(pos)
       meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
       meta:set_int("rune:type", -i)
+    end,
+  })
+
+  minetest.register_node("oleastre:rune_"..t, {
+    description = "Rune",
+    drawtype = "signlike",
+    tiles = {"rune.png^rune_"..t..".png"},
+    inventory_image = "rune.png^rune_"..t..".png",
+    paramtype = "light",
+    paramtype2 = "wallmounted",
+    drop = "oleastre:rune_inactive_"..t,
+    sunlight_propagates = true,
+    walkable = false,
+    selection_box = {type = "wallmounted"},
+    groups = {choppy = 2, dig_immediate = 2},
+    on_rightclick = function(pos, node, clicker)
+      rune.handle_rightclick(pos, node, clicker)
+    end,
+    on_punch = function(pos, node, clicker)
+      rune.search_ore(pos, node)
     end,
   })
 end
