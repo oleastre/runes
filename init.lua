@@ -26,14 +26,14 @@ rune.search_size = 7
 
 for i, p in ipairs(rune.pick_types) do
   minetest.register_craft({
-    output = "oleastre:rune_inactive_coal",
+    output = "runes:miner_inactive_coal",
     recipe = { {p}, {"group:stone"}}
   })
 end
 
 function rune.search_ore(pos, node)
   local meta = minetest.get_meta(pos)
-  local rune_type_idx = meta:get_int("rune:type")
+  local rune_type_idx = meta:get_int("runes:type")
   if(rune_type_idx<0) then
     return
   end
@@ -92,7 +92,7 @@ end
 
 function rune.handle_rightclick(pos, node, clicker)
   local meta = minetest.get_meta(pos)
-  local rune_type_idx = meta:get_int("rune:type")
+  local rune_type_idx = meta:get_int("runes:type")
   if(rune_type_idx<0) then
     rune_type_idx = -rune_type_idx
   else 
@@ -102,18 +102,18 @@ function rune.handle_rightclick(pos, node, clicker)
     rune_type_idx = 1
   end
   local rune_type = rune.types[rune_type_idx]
-  minetest.swap_node(pos, {name="oleastre:rune_"..rune_type, param1=node.param1, param2=node.param2 })
-  meta:set_int("rune:type", rune_type_idx)
+  minetest.swap_node(pos, {name="runes:miner_"..rune_type, param1=node.param1, param2=node.param2 })
+  meta:set_int("runes:type", rune_type_idx)
   rune.search_ore(pos, node)
 end
 
 
 for i, t in ipairs(rune.types) do
-  minetest.register_node("oleastre:rune_inactive_"..t, {
+  minetest.register_node("runes:miner_inactive_"..t, {
     description = "Rune",
     drawtype = "signlike",
-    tiles = {"rune.png"},
-    inventory_image = "rune.png",
+    tiles = {"runes_miner.png"},
+    inventory_image = "runes_miner.png",
     paramtype = "light",
     paramtype2 = "wallmounted",
     sunlight_propagates = true,
@@ -126,18 +126,18 @@ for i, t in ipairs(rune.types) do
     on_construct = function(pos)
       local meta = minetest.get_meta(pos)
       meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
-      meta:set_int("rune:type", -i)
+      meta:set_int("runes:type", -i)
     end,
   })
 
-  minetest.register_node("oleastre:rune_"..t, {
+  minetest.register_node("runes:miner_"..t, {
     description = "Rune",
     drawtype = "signlike",
-    tiles = {"rune.png^rune_"..t..".png"},
-    inventory_image = "rune.png^rune_"..t..".png",
+    tiles = {"runes_miner.png^runes_miner_"..t..".png"},
+    inventory_image = "runes_miner.png^runes_miner_"..t..".png",
     paramtype = "light",
     paramtype2 = "wallmounted",
-    drop = "oleastre:rune_inactive_"..t,
+    drop = "runes:miner_inactive_"..t,
     sunlight_propagates = true,
     walkable = false,
     selection_box = {type = "wallmounted"},
