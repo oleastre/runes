@@ -4,11 +4,11 @@ rune.pick_types = {
   "default:pick_stone",
   "default:pick_steel",
   "default:pick_bronze",
+  "default:pick_mese",
+  "default:pick_diamond",
   "default:pick_silver",
   "default:pick_gold",
-  "default:pick_diamond",
-  "default:pick_nyan",
-  "default:pick_mese"
+  "default:pick_nyan"
 }
 
 rune.types = {
@@ -96,10 +96,12 @@ function rune.handle_rightclick(pos, node, clicker)
   if(rune_type_idx<0) then
     rune_type_idx = -rune_type_idx
   else 
-    rune_type_idx = rune_type_idx + 1
-  end
-  if rune_type_idx > #rune.types then
-    rune_type_idx = 1
+    repeat
+      rune_type_idx = rune_type_idx + 1
+      if rune_type_idx > #rune.types then
+        rune_type_idx = 1
+      end
+    until minetest.registered_nodes["default:stone_with_"..rune.types[rune_type_idx]]
   end
   local rune_type = rune.types[rune_type_idx]
   minetest.swap_node(pos, {name="runes:miner_"..rune_type, param1=node.param1, param2=node.param2 })
