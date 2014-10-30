@@ -11,17 +11,19 @@ rune.pick_types = {
   "default:pick_nyan"
 }
 
-rune.types = {
-  "coal",
-  "iron",
-  "tin",
-  "copper",
-  "silver",
-  "gold",
-  "diamond",
-  "mese"
+rune.default_types = {
+  { name="coal", nodes={ "default:stone_with_coal" } },
+  { name="iron", nodes={ "default:stone_with_iron" } },
+  { name="tin", nodes={ "default:stone_with_tin", "moreores:mineral_tin" } },
+  { name="copper", nodes={ "default:stone_with_copper", "moreores:mineral_copper" } },
+  { name="silver", nodes={ "default:stone_with_silver", "moreores:mineral_silver" } },
+  { name="gold", nodes={ "default:stone_with_gold", "moreores:mineral_gold" } },
+  { name="diamond", nodes={ "default:stone_with_diamond", "moreores:mineral_diamond" } },
+  { name="mithril", nodes={ "default:stone_with_mithril", "moreores:mineral_mithril" } },
+  { name="mese", nodes={ "default:stone_with_mese" } },
 }
-
+rune.types = {}
+rune.types_idx = {}
 rune.search_size = 7
 
 for i, p in ipairs(rune.pick_types) do
@@ -31,14 +33,32 @@ for i, p in ipairs(rune.pick_types) do
   })
 end
 
+function rune.init_rune_types()
+  local idx = 0
+  for i, t in ipairs(rune.default_types) do
+    for j, n in ipairs(t.nodes) do
+      if minetest.registered_nodes[n] then
+        idx = idx + 1
+        rune.types[idx] = { name=t.name, node=n }
+        rune.types_idx[t.name] = idx
+        break
+      end
+    end
+  end
+end
+
+function rune.get_type(meta)
+  local name = meta:get_string("runes:type")
+  return rune.types[rune.types_idx[name]]
+end
+
 function rune.search_ore(pos, node)
   local meta = minetest.get_meta(pos)
-  local rune_type_idx = meta:get_int("runes:type")
-  if(rune_type_idx<0) then
+  local rune_type = rune.get_type(meta)
+  if meta:get_int("runes:state")==0 then
     return
   end
-  local rune_type = rune.types[rune_type_idx]
-  local res = minetest.find_node_near(pos, rune.search_size, "default:stone_with_"..rune_type)
+  local res = minetest.find_node_near(pos, rune.search_size, rune_type.node)
   if res then
     local wy, wy, wz
     local dx = math.floor(res.x - pos.x)
@@ -54,7 +74,6 @@ function rune.search_ore(pos, node)
     end
     
     local dir = node.param2
-    minetest.debug("param2="..dir.." dx="..dx.." dy="..dy.." dz="..dz)
     
     if (dir==1) or (dir==2) then 
       dx = -dx
@@ -83,35 +102,34 @@ function rune.search_ore(pos, node)
       wz =", "..(-dz).." left"
     end
     
-    meta:set_string("infotext", "Found "..rune_type.." "..wx..wz..wy)
+    meta:set_string("infotext", "Found "..rune_type.name.." "..wx..wz..wy)
   else
-    meta:set_string("infotext", "No "..rune_type.." found in the surrounding area.")
+    meta:set_string("infotext", "No "..rune_type.name.." found in the surrounding area.")
   end
 end
 
 
 function rune.handle_rightclick(pos, node, clicker)
   local meta = minetest.get_meta(pos)
-  local rune_type_idx = meta:get_int("runes:type")
-  if(rune_type_idx<0) then
-    rune_type_idx = -rune_type_idx
-  else 
-    repeat
-      rune_type_idx = rune_type_idx + 1
-      if rune_type_idx > #rune.types then
-        rune_type_idx = 1
-      end
-    until minetest.registered_nodes["default:stone_with_"..rune.types[rune_type_idx]]
+  local rune_type_name = meta:get_string("runes:type")
+  local rune_type_idx = rune.types_idx[rune_type_name]
+  
+  if (meta:get_int("runes:state")==1) then
+    rune_type_idx = rune_type_idx + 1
+    if rune_type_idx > #rune.types then
+      rune_type_idx = 1
+    end
   end
   local rune_type = rune.types[rune_type_idx]
-  minetest.swap_node(pos, {name="runes:miner_"..rune_type, param1=node.param1, param2=node.param2 })
-  meta:set_int("runes:type", rune_type_idx)
+  minetest.swap_node(pos, {name="runes:miner_"..rune_type.name, param1=node.param1, param2=node.param2 })
+  meta:set_string("runes:type", rune_type.name)
+  meta:set_int("runes:state", 1)
   rune.search_ore(pos, node)
 end
 
 
-for i, t in ipairs(rune.types) do
-  minetest.register_node("runes:miner_inactive_"..t, {
+for i, t in ipairs(rune.default_types) do
+  minetest.register_node("runes:miner_inactive_"..t.name, {
     description = "Rune",
     drawtype = "signlike",
     tiles = {"runes_miner.png"},
@@ -127,19 +145,20 @@ for i, t in ipairs(rune.types) do
     end,
     on_construct = function(pos)
       local meta = minetest.get_meta(pos)
-      meta:set_string("infotext", "Activate me (right click) to find ores in the surroundig area.")
-      meta:set_int("runes:type", -i)
+      meta:set_string("infotext", "Activate me (right click) to find ores in the surrounding area.")
+      meta:set_string("runes:type", t.name)
+      meta:set_int("runes:state", 0)
     end,
   })
 
-  minetest.register_node("runes:miner_"..t, {
+  minetest.register_node("runes:miner_"..t.name, {
     description = "Rune",
     drawtype = "signlike",
-    tiles = {"runes_miner.png^runes_miner_"..t..".png"},
-    inventory_image = "runes_miner.png^runes_miner_"..t..".png",
+    tiles = {"runes_miner.png^runes_miner_"..t.name..".png"},
+    inventory_image = "runes_miner.png^runes_miner_"..t.name..".png",
     paramtype = "light",
     paramtype2 = "wallmounted",
-    drop = "runes:miner_inactive_"..t,
+    drop = "runes:miner_inactive_"..t.name,
     sunlight_propagates = true,
     walkable = false,
     selection_box = {type = "wallmounted"},
@@ -153,3 +172,18 @@ for i, t in ipairs(rune.types) do
   })
 end
 
+minetest.after(0, rune.init_rune_types)
+
+minetest.register_chatcommand("rune_find", {
+  params="<node_type>",
+  description="Search for a specific node type in the surrounding area",
+  func=function(name, node_type) 
+    local player = minetest.get_player_by_name(name)
+    local res = minetest.find_node_near(player:getpos(), rune.search_size, node_type)
+    if res then
+      minetest.chat_send_player(name, "Found "..node_type.." at: ("..res.x..", "..res.y..", "..res.z..").")
+    else
+      minetest.chat_send_player(name, "No "..node_type.." found in the surrounding area.")
+    end
+  end
+})
