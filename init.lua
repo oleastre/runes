@@ -174,16 +174,31 @@ end
 
 minetest.after(0, rune.init_rune_types)
 
-minetest.register_chatcommand("rune_find", {
-  params="<node_type>",
-  description="Search for a specific node type in the surrounding area",
-  func=function(name, node_type) 
+function rune.find(name, node_type, area_size) 
+    local shortcuts = { 
+      ["lava"] = "default:lava_source",
+      ["gravel"] = "default:gravel"
+    }
+    local ntype = shortcuts[node_type] or node_type
     local player = minetest.get_player_by_name(name)
-    local res = minetest.find_node_near(player:getpos(), rune.search_size, node_type)
+    local res = minetest.find_node_near(player:getpos(), area_size, ntype)
     if res then
-      minetest.chat_send_player(name, "Found "..node_type.." at: ("..res.x..", "..res.y..", "..res.z..").")
+      minetest.chat_send_player(name, "Found "..ntype.." at: ("..res.x..", "..res.y..", "..res.z..").")
     else
-      minetest.chat_send_player(name, "No "..node_type.." found in the surrounding area.")
+      minetest.chat_send_player(name, "No "..ntype.." found in the surrounding area of size "..area_size..".")
+    end
+end
+
+minetest.register_chatcommand("rune_find", {
+  params="<node_type> [area_size]",
+  description="Search for a specific node type in the surrounding area",
+  func=function(name, params) 
+    found, _, node_type, area_size = params:find("^([%S]+)(.*)$")
+    if found == nil then
+      minetest.chat_send_player(name, "Usage: rune_find <node_type> [area_size]")
+    else
+      rune.find(name, node_type, tonumber(area_size) or rune.search_size)
     end
   end
 })
+
