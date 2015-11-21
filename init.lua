@@ -1,5 +1,5 @@
 local rune = {}
-rune.pick_types = { 
+rune.pick_types = {
   "default:pick_wood",
   "default:pick_stone",
   "default:pick_steel",
@@ -64,18 +64,18 @@ function rune.search_ore(pos, node)
     local dx = math.floor(res.x - pos.x)
     local dy = math.floor(res.y - pos.y)
     local dz = math.floor(res.z - pos.z)
-    
-    if (dy > 0) then 
+
+    if (dy > 0) then
       wy = ", "..dy.." above"
-    elseif (dy==0) then 
+    elseif (dy==0) then
       wy = ""
-    else 
+    else
       wy = ", "..(-dy).." below"
     end
-    
+
     local dir = node.param2
-    
-    if (dir==1) or (dir==2) then 
+
+    if (dir==1) or (dir==2) then
       dx = -dx
       dz = -dz
     elseif dir==4 then
@@ -87,21 +87,21 @@ function rune.search_ore(pos, node)
       dx = dz
       dz = -t
     end
-    
-    if (dx > 0) then 
+
+    if (dx > 0) then
       wx = dx.." steps backward"
     else
       wx = (-dx).." steps forward"
     end
-    
-    if (dz > 0) then 
+
+    if (dz > 0) then
       wz = ", "..dz.." right"
     elseif (dz==0) then
       wz= ""
     else
       wz =", "..(-dz).." left"
     end
-    
+
     meta:set_string("infotext", "Found "..rune_type.name.." "..wx..wz..wy)
   else
     meta:set_string("infotext", "No "..rune_type.name.." found in the surrounding area.")
@@ -113,7 +113,7 @@ function rune.handle_rightclick(pos, node, clicker)
   local meta = minetest.get_meta(pos)
   local rune_type_name = meta:get_string("runes:type")
   local rune_type_idx = rune.types_idx[rune_type_name]
-  
+
   if (meta:get_int("runes:state")==1) then
     rune_type_idx = rune_type_idx + 1
     if rune_type_idx > #rune.types then
@@ -129,6 +129,11 @@ end
 
 
 for i, t in ipairs(rune.default_types) do
+  groups = {choppy = 2, dig_immediate = 2}
+  if (t.name~="coal") then
+    groups["not_in_craft_guide"]=1
+  end
+
   minetest.register_node("runes:miner_inactive_"..t.name, {
     description = "Rune",
     drawtype = "signlike",
@@ -139,7 +144,7 @@ for i, t in ipairs(rune.default_types) do
     sunlight_propagates = true,
     walkable = false,
     selection_box = {type = "wallmounted"},
-    groups = {choppy = 2, dig_immediate = 2},
+    groups = groups,
     on_rightclick = function(pos, node, clicker)
       rune.handle_rightclick(pos, node, clicker)
     end,
@@ -162,7 +167,7 @@ for i, t in ipairs(rune.default_types) do
     sunlight_propagates = true,
     walkable = false,
     selection_box = {type = "wallmounted"},
-    groups = {choppy = 2, dig_immediate = 2},
+    groups = {choppy = 2, dig_immediate = 2, not_in_craft_guide=1},
     on_rightclick = function(pos, node, clicker)
       rune.handle_rightclick(pos, node, clicker)
     end,
@@ -174,8 +179,8 @@ end
 
 minetest.after(0, rune.init_rune_types)
 
-function rune.find(name, node_type, area_size) 
-    local shortcuts = { 
+function rune.find(name, node_type, area_size)
+    local shortcuts = {
       ["lava"] = "default:lava_source",
       ["gravel"] = "default:gravel"
     }
@@ -192,7 +197,7 @@ end
 minetest.register_chatcommand("rune_find", {
   params="<node_type> [area_size]",
   description="Search for a specific node type in the surrounding area",
-  func=function(name, params) 
+  func=function(name, params)
     found, _, node_type, area_size = params:find("^([%S]+)(.*)$")
     if found == nil then
       minetest.chat_send_player(name, "Usage: rune_find <node_type> [area_size]")
