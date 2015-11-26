@@ -27,10 +27,12 @@ rune.types_idx = {}
 rune.search_size = 7
 
 for i, p in ipairs(rune.pick_types) do
-  minetest.register_craft({
-    output = "runes:miner_inactive_coal",
-    recipe = { {p}, {"group:stone"}}
-  })
+  if(minetest.registered_items[p] ~= nil) then
+    minetest.register_craft({
+      output = "runes:miner_inactive_coal",
+      recipe = { {p}, {"group:stone"}}
+    })
+  end
 end
 
 function rune.init_rune_types()
