@@ -131,7 +131,7 @@ end
 for i, t in ipairs(rune.default_types) do
   groups = {choppy = 2, dig_immediate = 2}
   if (t.name~="coal") then
-    groups["not_in_craft_guide"]=1
+    groups["not_in_creative_inventory"]=1
   end
 
   minetest.register_node("runes:miner_inactive_"..t.name, {
