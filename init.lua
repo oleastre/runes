@@ -1,3 +1,4 @@
+local S = minetest.get_translator("runes")
 local rune = {}
 rune.pick_types = {
   "default:pick_wood",
@@ -67,12 +68,11 @@ function rune.search_ore(pos, node)
     local dy = math.floor(res.y - pos.y)
     local dz = math.floor(res.z - pos.z)
 
-    if (dy > 0) then
-      wy = ", "..dy.." above"
-    elseif (dy==0) then
-      wy = ""
+    if (dy >= 0) then
+      wy = "above"
     else
-      wy = ", "..(-dy).." below"
+      wy = "below"
+      dy = -dy
     end
 
     local dir = node.param2
@@ -91,22 +91,22 @@ function rune.search_ore(pos, node)
     end
 
     if (dx > 0) then
-      wx = dx.." steps backward"
+      wx = "backward"
     else
-      wx = (-dx).." steps forward"
+      wx = "forward"
+      dx = -dx
     end
 
-    if (dz > 0) then
-      wz = ", "..dz.." right"
-    elseif (dz==0) then
-      wz= ""
+    if (dz >= 0) then
+      wz = "right"
     else
-      wz =", "..(-dz).." left"
+      wz ="left"
+      dz = -dz
     end
 
-    meta:set_string("infotext", "Found "..rune_type.name.." "..wx..wz..wy)
+    meta:set_string("infotext", S("Found @1: @2 steps @3, @4 @5, @6 @7", S(rune_type.name), dx, S(wx), dy, S(wy), dz, S(wz)))
   else
-    meta:set_string("infotext", "No "..rune_type.name.." found in the surrounding area.")
+    meta:set_string("infotext", S("No @1 found in the surrounding area", S(rune_type.name)))
   end
 end
 
@@ -208,4 +208,3 @@ minetest.register_chatcommand("rune_find", {
     end
   end
 })
-
