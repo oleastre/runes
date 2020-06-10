@@ -152,7 +152,7 @@ for i, t in ipairs(rune.default_types) do
     end,
     on_construct = function(pos)
       local meta = minetest.get_meta(pos)
-      meta:set_string("infotext", "Activate me (right click) to find ores in the surrounding area.")
+      meta:set_string("infotext", S("Activate me (right click) to find ores in the surrounding area."))
       meta:set_string("runes:type", t.name)
       meta:set_int("runes:state", 0)
     end,
