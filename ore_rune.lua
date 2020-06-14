@@ -1,16 +1,5 @@
 local S = minetest.get_translator("runes")
 local ore_rune = {}
-ore_rune.pick_types = {
-  "default:pick_wood",
-  "default:pick_stone",
-  "default:pick_steel",
-  "default:pick_bronze",
-  "default:pick_mese",
-  "default:pick_diamond",
-  "default:pick_silver",
-  "default:pick_gold",
-  "default:pick_nyan"
-}
 
 ore_rune.default_types = {
   { name="coal", nodes={ "default:stone_with_coal" } },
@@ -27,14 +16,10 @@ ore_rune.types = {}
 ore_rune.types_idx = {}
 ore_rune.search_size = 7
 
-for i, p in ipairs(ore_rune.pick_types) do
-  if(minetest.registered_items[p] ~= nil) then
-    minetest.register_craft({
-      output = "runes:miner_inactive_coal",
-      recipe = { {p}, {"group:stone"}}
-    })
-  end
-end
+minetest.register_craft({
+  output = "runes:miner_inactive_coal",
+  recipe = { {"group:pickaxe"}, {"group:stone"}}
+})
 
 function ore_rune.init_rune_types()
   local idx = 0
