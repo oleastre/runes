@@ -5,17 +5,15 @@ Runes mod
 **When your are done, place your rune somewhere, activate it and let it's magic help you.**
 
 
-This mod adds some new nodes called "runes" that when activated, gives you some 
+This mod adds some new nodes called "runes" that when activated, gives you some
 hint about the sourrounding area.
-
-Current version is tested and targetted to work with the carbone game.
 
 Miners's rune
 -------------
 
 This rune will guide you to a selected ore type.
 
-Craft receipt: 
+Craft receipt:
 
     pick
     stone
