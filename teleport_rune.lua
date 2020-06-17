@@ -45,9 +45,9 @@ teleport_rune.save_block_meta = function(pos, description, block_meta, item_meta
 end
 
 teleport_rune.restore_block_meta = function(item_meta, block_meta)
-    block_meta:set_string("text", item_meta:get_string("text"))
-    block_meta:set_string("infotext", item_meta:get_string("text"))
-    block_meta:set_string("rune_pos", item_meta:get_string("rune_pos"))
+    block_meta:set_string("text", item_meta["text"])
+    block_meta:set_string("infotext", item_meta["text"])
+    block_meta:set_string("rune_pos", item_meta["rune_pos"])
     return block_meta
 end
 
@@ -97,9 +97,26 @@ minetest.register_node("runes:teleport_gravel", {
             block_pos = below_pos
             minetest.remove_node(pos)
             minetest.set_node(below_pos, { name = "runes:teleport_block" } )
+            minetest.sound_play("runes_teleport_build", {pos = pos, max_hear_distance = 8}, true)
+            minetest.add_particlespawner({
+                amount = 50,
+                time = 3,
+                minpos = {x = pos.x-0.5, y=pos.y+1, z=pos.z-0.5},
+                maxpos = {x = pos.x+0.5, y=pos.y-0.5, z=pos.z+0.5},
+                minvel = {x = -0.1, y=-0, z=-0.1},
+                maxvel = {x = 0.1, y=-0.5, z=0.1},
+                minacc = vector.new(),
+                maxacc = vector.new(),
+                minexptime = 1,
+                maxexptime = 3,
+                minsize = 1,
+                maxsize = 3,
+                texture="runes_teleport_particle.png",
+                glow=7,
+            })
         end
         local block_meta = minetest.get_meta(block_pos)
-        teleport_rune.restore_block_meta(gravel_meta, block_meta)
+        teleport_rune.restore_block_meta(gravel_meta:to_table().fields, block_meta)
     end,
     preserve_metadata = function(pos, oldnode, oldmeta, drops)
         teleport_rune.save_block_meta(pos, "Gravel with memory", oldmeta, drops[1]:get_meta())
@@ -112,12 +129,28 @@ minetest.register_node("runes:teleport_block", {
     groups = {cracky = 3, not_in_creative_inventory = 1},
     stack_max=1,
     sounds = default.node_sound_stone_defaults(),
-    after_place_node = function(pos, placer, itemstack, pointed_thing)
-        teleport_rune.restore_block_meta(itemstack:get_meta(), minetest.get_meta(pos))
-    end,
-    preserve_metadata = function(pos, oldnode, oldmeta, drops)
-        teleport_rune.save_block_meta(pos, "Stone with memory", oldmeta, drops[1]:get_meta())
-    end,
+    drop = {},
+    after_dig_node = function(pos, oldnode, oldmetadata, digger)
+        minetest.set_node(pos, { name = "runes:teleport_block_engraved" } )
+        minetest.sound_play("runes_teleport_engrave", {pos = pos, max_hear_distance = 8}, true)
+        minetest.add_particlespawner({
+            amount = 50,
+            time = 3,
+            minpos = {x = pos.x-0.5, y=pos.y-0.5, z=pos.z-0.5},
+            maxpos = {x = pos.x+0.5, y=pos.y+1, z=pos.z+0.5},
+            minvel = {x = -0.2, y=0.2, z=-0.2},
+            maxvel = {x = 0.2, y=0.5, z=0.2},
+            minacc = vector.new(),
+            maxacc = vector.new(),
+            minexptime = 1,
+            maxexptime = 3,
+            minsize = 1,
+            maxsize = 3,
+            texture="runes_teleport_particle.png",
+            glow=7,
+        })
+        teleport_rune.restore_block_meta(oldmetadata.fields, minetest.get_meta(pos))
+    end
 })
 
 minetest.register_node("runes:teleport_block_engraved", {
@@ -127,9 +160,48 @@ minetest.register_node("runes:teleport_block_engraved", {
     stack_max=1,
     sounds = default.node_sound_stone_defaults(),
     after_place_node = function(pos, placer, itemstack, pointed_thing)
-        teleport_rune.restore_block_meta(itemstack:get_meta(), minetest.get_meta(pos))
+        teleport_rune.restore_block_meta(itemstack:get_meta():to_table().fields, minetest.get_meta(pos))
     end,
     preserve_metadata = function(pos, oldnode, oldmeta, drops)
         teleport_rune.save_block_meta(pos, "Teleport stone", oldmeta, drops[1]:get_meta())
     end,
+    on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+        local origin = pos
+        local dest = minetest.deserialize(minetest.get_meta(pos):get_string("rune_pos"))
+        minetest.sound_play("runes_teleport_activate", {pos = origin, max_hear_distance = 8}, true)
+        minetest.sound_play("runes_teleport_activate", {pos = dest, max_hear_distance = 8}, true)
+        minetest.add_particlespawner({
+            amount = 25,
+            time = 2,
+            minpos = {x = origin.x-0.5, y=origin.y-0.5, z=origin.z-0.5},
+            maxpos = {x = origin.x+0.5, y=origin.y+2, z=origin.z+0.5},
+            minvel = {x = -0.5, y=0.2, z=-0.5},
+            maxvel = {x = 0.5, y=0.5, z=0.5},
+            minacc = vector.new(),
+            maxacc = vector.new(),
+            minexptime = 1,
+            maxexptime = 2,
+            minsize = 1,
+            maxsize = 2,
+            texture="runes_teleport_particle.png",
+            glow=7,
+        })
+        minetest.add_particlespawner({
+            amount = 25,
+            time = 2,
+            minpos = {x = dest.x-0.5, y=dest.y-0.5, z=dest.z-0.5},
+            maxpos = {x = dest.x+0.5, y=dest.y+2, z=dest.z+0.5},
+            minvel = {x = -0.5, y=0.2, z=-0.5},
+            maxvel = {x = 0.5, y=0.5, z=0.5},
+            minacc = vector.new(),
+            maxacc = vector.new(),
+            minexptime = 1,
+            maxexptime = 2,
+            minsize = 1,
+            maxsize = 2,
+            texture="runes_teleport_particle.png",
+            glow=7,
+        })
+        clicker:set_pos(dest)
+    end
 })
