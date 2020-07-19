@@ -126,6 +126,7 @@ for i, t in ipairs(ore_rune.default_types) do
     drawtype = "signlike",
     tiles = {"runes_miner.png"},
     inventory_image = "runes_miner.png",
+    wield_image = "runes_miner.png",
     paramtype = "light",
     paramtype2 = "wallmounted",
     sunlight_propagates = true,
